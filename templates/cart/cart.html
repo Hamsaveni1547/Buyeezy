@@ -1,0 +1,146 @@
+<!-- templates/cart/cart.html -->
+{% extends 'base.html' %}
+
+{% block title %}Shopping Cart - E-Store{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+    <div class="breadcrumb-item"><a href="{% url 'store:home' %}">Home</a></div>
+    <div class="breadcrumb-item active">Shopping Cart</div>
+</nav>
+
+<h1 style="margin-bottom: 2rem;">Shopping Cart</h1>
+
+{% if cart_items %}
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+        <!-- Cart Items -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Cart Items ({{ cart_items.count }})</h3>
+            </div>
+            <div class="card-body" style="padding: 0;">
+                {% for item in cart_items %}
+                <div style="display: grid; grid-template-columns: 100px 1fr auto auto auto; gap: 1rem; align-items: center; padding: 1.5rem; border-bottom: 1px solid #eee;">
+                    <!-- Product Image -->
+                    <div>
+                        {% if item.product.image %}
+                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 5px;">
+                        {% else %}
+                            <div style="width: 80px; height: 80px; background-color: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 5px; color: #999;">
+                                <i class="fas fa-image"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Product Info -->
+                    <div>
+                        <h4 style="margin: 0 0 0.5rem 0;">
+                            <a href="{% url 'store:product_detail' item.product.slug %}" style="color: #333; text-decoration: none;">
+                                {{ item.product.name }}
+                            </a>
+                        </h4>
+                        <p style="color: #666; margin: 0; font-size: 0.9rem;">{{ item.product.category.name }}</p>
+                        <p style="color: #28a745; font-weight: bold; margin: 0.5rem 0 0 0;">${{ item.product.price }}</p>
+                    </div>
+                    
+                    <!-- Quantity Controls -->
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <button onclick="updateQuantity({{ item.id }}, {{ item.quantity|add:'-1' }})" 
+                                class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;"
+                                {% if item.quantity <= 1 %}disabled{% endif %}>
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <span style="padding: 0.5rem; min-width: 40px; text-align: center; background: #f8f9fa; border-radius: 3px;">
+                            {{ item.quantity }}
+                        </span>
+                        <button onclick="updateQuantity({{ item.id }}, {{ item.quantity|add:'1' }})" 
+                                class="btn btn-outline" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;"
+                                {% if item.quantity >= item.product.stock %}disabled{% endif %}>
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Total Price -->
+                    <div style="text-align: right; font-weight: bold; color: #333;">
+                        ${{ item.total_price }}
+                    </div>
+                    
+                    <!-- Remove Button -->
+                    <div>
+                        <button onclick="removeFromCart({{ item.id }})" class="btn btn-danger" style="padding: 0.5rem;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'cart:clear_cart' %}" class="btn btn-outline" 
+                   onclick="return confirm('Are you sure you want to clear your cart?')">
+                    <i class="fas fa-trash-alt"></i> Clear Cart
+                </a>
+            </div>
+        </div>
+        
+        <!-- Order Summary -->
+        <div class="card" style="height: fit-content;">
+            <div class="card-header">
+                <h3>Order Summary</h3>
+            </div>
+            <div class="card-body">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                    <span>Subtotal:</span>
+                    <span>${{ total }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                    <span>Shipping:</span>
+                    <span>{% if total >= 50 %}Free{% else %}$5.00{% endif %}</span>
+                </div>
+                <hr>
+                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2rem; margin-bottom: 2rem;">
+                    <span>Total:</span>
+                    <span>${% if total >= 50 %}{{ total }}{% else %}{{ total|add:'5' }}{% endif %}</span>
+                </div>
+                
+                {% if user.is_authenticated %}
+                    <a href="{% url 'orders:checkout' %}" class="btn btn-success" style="width: 100%; margin-bottom: 1rem;">
+                        <i class="fas fa-credit-card"></i> Proceed to Checkout
+                    </a>
+                {% else %}
+                    <div style="text-align: center; margin-bottom: 1rem;">
+                        <p style="margin-bottom: 1rem;">Please login to proceed</p>
+                        <a href="{% url 'accounts:login' %}?next={% url 'orders:checkout' %}" class="btn btn-primary" style="width: 100%; margin-bottom: 0.5rem;">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </a>
+                        <a href="{% url 'accounts:register' %}" class="btn btn-outline" style="width: 100%;">
+                            <i class="fas fa-user-plus"></i> Register
+                        </a>
+                    </div>
+                {% endif %}
+                
+                <a href="{% url 'store:product_list' %}" class="btn btn-outline" style="width: 100%;">
+                    <i class="fas fa-arrow-left"></i> Continue Shopping
+                </a>
+                
+                <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #eee; color: #666; font-size: 0.9rem;">
+                    <p><i class="fas fa-truck"></i> Free shipping on orders over $50</p>
+                    <p><i class="fas fa-shield-alt"></i> Secure checkout</p>
+                    <p><i class="fas fa-undo"></i> 30-day return policy</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <!-- Empty Cart -->
+    <div style="text-align: center; padding: 4rem 2rem;">
+        <i class="fas fa-shopping-cart" style="font-size: 5rem; color: #ccc; margin-bottom: 2rem;"></i>
+        <h2 style="margin-bottom: 1rem;">Your cart is empty</h2>
+        <p style="color: #666; margin-bottom: 2rem;">Add some products to get started!</p>
+        <a href="{% url 'store:product_list' %}" class="btn btn-primary">
+            <i class="fas fa-shopping-bag"></i> Start Shopping
+        </a>
+    </div>
+{% endif %}
+
+{% csrf_token %}
+{% endblock %}

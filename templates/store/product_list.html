@@ -1,0 +1,139 @@
+<!-- templates/store/product_list.html -->
+{% extends 'base.html' %}
+
+{% block title %}Products - E-Store{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+    <div class="breadcrumb-item"><a href="{% url 'store:home' %}">Home</a></div>
+    {% if current_category %}
+        <div class="breadcrumb-item"><a href="{% url 'store:product_list' %}">Products</a></div>
+        <div class="breadcrumb-item active">{{ current_category.name }}</div>
+    {% else %}
+        <div class="breadcrumb-item active">Products</div>
+    {% endif %}
+</nav>
+
+<div style="display: grid; grid-template-columns: 250px 1fr; gap: 2rem; align-items: start;">
+    <!-- Filters Sidebar -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Filters</h3>
+        </div>
+        <div class="card-body">
+            <form method="GET">
+                <!-- Keep search query -->
+                {% if query %}
+                    <input type="hidden" name="q" value="{{ query }}">
+                {% endif %}
+                
+                <!-- Categories -->
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select name="category" class="form-control" onchange="this.form.submit()">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                            <option value="{{ category.slug }}" {% if current_category == category %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Price Range -->
+                <div class="form-group">
+                    <label class="form-label">Price Range</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                        <input type="number" name="min_price" placeholder="Min" class="form-control" value="{{ min_price }}">
+                        <input type="number" name="max_price" placeholder="Max" class="form-control" value="{{ max_price }}">
+                    </div>
+                </div>
+                
+                <!-- Sort -->
+                <div class="form-group">
+                    <label class="form-label">Sort By</label>
+                    <select name="sort" class="form-control" onchange="this.form.submit()">
+                        <option value="name" {% if sort == 'name' %}selected{% endif %}>Name</option>
+                        <option value="price_low" {% if sort == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                        <option value="price_high" {% if sort == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                        <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest First</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Apply Filters</button>
+                <a href="{% url 'store:product_list' %}" class="btn btn-outline" style="width: 100%; margin-top: 0.5rem;">Clear Filters</a>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Products -->
+    <div>
+        {% if query %}
+            <h2>Search Results for "{{ query }}"</h2>
+            <p>{{ page_obj.paginator.count }} product{{ page_obj.paginator.count|pluralize }} found</p>
+        {% elif current_category %}
+            <h2>{{ current_category.name }}</h2>
+            <p>{{ current_category.description }}</p>
+        {% else %}
+            <h2>All Products</h2>
+        {% endif %}
+        
+        {% if page_obj.object_list %}
+            <div class="product-grid">
+                {% for product in page_obj %}
+                <div class="product-card">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+                    {% else %}
+                        <div class="product-image" style="background-color: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999;">
+                            <i class="fas fa-image" style="font-size: 3rem;"></i>
+                        </div>
+                    {% endif %}
+                    <div class="product-info">
+                        <div class="product-category">{{ product.category.name }}</div>
+                        <a href="{% url 'store:product_detail' product.slug %}" class="product-title">{{ product.name }}</a>
+                        <div class="product-price">${{ product.price }}</div>
+                        {% if product.is_in_stock %}
+                            {% csrf_token %}
+                            <button onclick="addToCart({{ product.id }})" class="btn btn-primary" style="width: 100%;">
+                                <i class="fas fa-cart-plus"></i> Add to Cart
+                            </button>
+                        {% else %}
+                            <button class="btn btn-danger" style="width: 100%;" disabled>
+                                Out of Stock
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+                <div style="display: flex; justify-content: center; align-items: center; margin-top: 3rem; gap: 1rem;">
+                    {% if page_obj.has_previous %}
+                        <a href="?page=1{% if query %}&q={{ query }}{% endif %}{% if current_category %}&category={{ current_category.slug }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}" class="btn btn-outline">First</a>
+                        <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if current_category %}&category={{ current_category.slug }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}" class="btn btn-outline">Previous</a>
+                    {% endif %}
+                    
+                    <span style="padding: 0.75rem 1rem; background: white; border-radius: 5px; border: 2px solid #e9ecef;">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if current_category %}&category={{ current_category.slug }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}" class="btn btn-outline">Next</a>
+                        <a href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}{% if current_category %}&category={{ current_category.slug }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}{% if min_price %}&min_price={{ min_price }}{% endif %}{% if max_price %}&max_price={{ max_price }}{% endif %}" class="btn btn-outline">Last</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% else %}
+            <div style="text-align: center; padding: 3rem;">
+                <i class="fas fa-search" style="font-size: 4rem; color: #ccc; margin-bottom: 1rem;"></i>
+                <h3>No products found</h3>
+                <p>Try adjusting your search criteria</p>
+                <a href="{% url 'store:product_list' %}" class="btn btn-primary">View All Products</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

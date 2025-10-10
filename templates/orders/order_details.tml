@@ -1,0 +1,111 @@
+<!-- templates/orders/order_detail.html -->
+{% extends 'base.html' %}
+
+{% block title %}Order #{{ order.order_id }} - E-Store{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+    <div class="breadcrumb-item"><a href="{% url 'store:home' %}">Home</a></div>
+    <div class="breadcrumb-item"><a href="{% url 'orders:order_history' %}">Orders</a></div>
+    <div class="breadcrumb-item active">Order #{{ order.order_id }}</div>
+</nav>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1>Order #{{ order.order_id }}</h1>
+    <span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+    <!-- Order Items -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Order Items</h3>
+        </div>
+        <div class="card-body" style="padding: 0;">
+            {% for item in order.items.all %}
+            <div style="display: grid; grid-template-columns: 80px 1fr auto auto; gap: 1rem; align-items: center; padding: 1.5rem; border-bottom: 1px solid #eee;">
+                {% if item.product.image %}
+                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 5px;">
+                {% else %}
+                    <div style="width: 80px; height: 80px; background-color: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 5px; color: #999;">
+                        <i class="fas fa-image"></i>
+                    </div>
+                {% endif %}
+                
+                <div>
+                    <h4 style="margin: 0 0 0.5rem 0;">
+                        <a href="{% url 'store:product_detail' item.product.slug %}" style="color: #333; text-decoration: none;">
+                            {{ item.product.name }}
+                        </a>
+                    </h4>
+                    <p style="color: #666; margin: 0;">{{ item.product.category.name }}</p>
+                </div>
+                
+                <div style="text-align: center;">
+                    <div style="font-weight: 500;">Qty: {{ item.quantity }}</div>
+                    <div style="color: #666; font-size: 0.9rem;">${{ item.price }} each</div>
+                </div>
+                
+                <div style="text-align: right; font-weight: bold;">
+                    ${{ item.total_price }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Order Information -->
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <!-- Order Summary -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Order Summary</h3>
+            </div>
+            <div class="card-body">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Order Date:</span>
+                    <span>{{ order.created_at|date:"F d, Y" }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Payment Method:</span>
+                    <span>{{ order.get_payment_method_display }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                    <span>Status:</span>
+                    <span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span>
+                </div>
+                <hr>
+                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.1rem;">
+                    <span>Total:</span>
+                    <span>${{ order.total_amount }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Delivery Address -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Delivery Address</h3>
+            </div>
+            <div class="card-body">
+                <div style="line-height: 1.6;">
+                    <strong>{{ order.first_name }} {{ order.last_name }}</strong><br>
+                    {{ order.address }}<br>
+                    {{ order.city }}, {{ order.state }} {{ order.postal_code }}<br>
+                    <strong>Phone:</strong> {{ order.phone }}<br>
+                    <strong>Email:</strong> {{ order.email }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div style="text-align: center; margin-top: 3rem;">
+    <a href="{% url 'orders:order_history' %}" class="btn btn-outline">
+        <i class="fas fa-arrow-left"></i> Back to Orders
+    </a>
+    <a href="{% url 'store:product_list' %}" class="btn btn-primary">
+        <i class="fas fa-shopping-bag"></i> Shop Again
+    </a>
+</div>
+{% endblock %}

@@ -1,0 +1,109 @@
+<!-- templates/orders/order_history.html -->
+{% extends 'base.html' %}
+
+{% block title %}Order History - E-Store{% endblock %}
+
+{% block content %}
+<nav class="breadcrumb">
+    <div class="breadcrumb-item"><a href="{% url 'store:home' %}">Home</a></div>
+    <div class="breadcrumb-item active">Order History</div>
+</nav>
+
+<h1 style="margin-bottom: 2rem;">My Orders</h1>
+
+{% if orders %}
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        {% for order in orders %}
+        <div class="card">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong>Order #{{ order.order_id }}</strong>
+                    <span style="color: #666; margin-left: 1rem;">{{ order.created_at|date:"F d, Y" }}</span>
+                </div>
+                <div>
+                    <span class="status-badge status-{{ order.status }}">{{ order.get_status_display }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 2rem; align-items: center;">
+                    <div>
+                        <div style="margin-bottom: 0.5rem;">
+                            {% for item in order.items.all|slice:":3" %}
+                                <span>{{ item.product.name }}{% if not forloop.last %}, {% endif %}</span>
+                            {% endfor %}
+                            {% if order.items.count > 3 %}
+                                <span>and {{ order.items.count|add:"-3" }} more item{{ order.items.count|add:"-3"|pluralize }}</span>
+                            {% endif %}
+                        </div>
+                        <div style="color: #666; font-size: 0.9rem;">
+                            {{ order.items.count }} item{{ order.items.count|pluralize }}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div style="font-weight: bold; color: #28a745;">
+                            ${{ order.total_amount }}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div style="font-size: 0.9rem; color: #666;">
+                            {{ order.get_payment_method_display }}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <a href="{% url 'orders:order_detail' order.order_id %}" class="btn btn-outline">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div style="text-align: center; padding: 4rem 2rem;">
+        <i class="fas fa-receipt" style="font-size: 5rem; color: #ccc; margin-bottom: 2rem;"></i>
+        <h2 style="margin-bottom: 1rem;">No orders yet</h2>
+        <p style="color: #666; margin-bottom: 2rem;">When you place your first order, it will appear here.</p>
+        <a href="{% url 'store:product_list' %}" class="btn btn-primary">
+            <i class="fas fa-shopping-bag"></i> Start Shopping
+        </a>
+    </div>
+{% endif %}
+
+<style>
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-confirmed {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .status-shipped {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .status-delivered {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .status-cancelled {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+</style>
+{% endblock %}
