@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - E-Store{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+<nav class="breadcrumb">
+    <div class="breadcrumb-item"><a href="{% url 'store:home' %}">Home</a></div>
+    <div class="breadcrumb-item"><a href="{% url 'store:category' product.category.slug %}">{{ product.category.name }}</a></div>
+    <div class="breadcrumb-item active">{{ product.name }}</div>
+</nav>
+
+<div class="product-detail" style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 2rem 0;">
+    <!-- Product Images -->
+    <div class="product-images">
+        <div class="main-image" style="margin-bottom: 1rem;">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" 
+                style="width: 100%; height: auto; object-fit: contain; border-radius: 8px; cursor: pointer;"
+                onclick="openImageModal(this.src)">
+            {% else %}
+            <div style="width: 100%; height: 400px; background-color: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-image" style="font-size: 3rem; color: #999;"></i>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Product Info -->
+    <div class="product-info">
+        <h1 style="margin-bottom: 1rem;">{{ product.name }}</h1>
+        
+        <div class="price" style="font-size: 2rem; color: #2d3748; margin-bottom: 1rem;">
+            ${{ product.price }}
+        </div>
+
+        {% if product.stock > 0 %}
+        <div class="stock" style="color: #48bb78; margin-bottom: 1rem;">
+            <i class="fas fa-check-circle"></i> In Stock ({{ product.stock }} available)
+        </div>
+        {% else %}
+        <div class="stock" style="color: #e53e3e; margin-bottom: 1rem;">
+            <i class="fas fa-times-circle"></i> Out of Stock
+        </div>
+        {% endif %}
+
+        <div class="description" style="margin-bottom: 2rem;">
+            {{ product.description|linebreaks }}
+        </div>
+
+        {% if product.stock > 0 %}
+        <div style="margin-bottom: 2rem;">
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <input type="number" id="quantity" value="1" min="1" max="{{ product.stock }}" 
+                    style="width: 80px; padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
+                <button onclick="addToCart({{ product.id }}, document.getElementById('quantity').value)" class="btn btn-primary">
+                    <i class="fas fa-cart-plus"></i> Add to Cart
+                </button>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="additional-info" style="border-top: 1px solid #e2e8f0; padding-top: 1rem;">
+            <div style="margin-bottom: 0.5rem;">
+                <strong>Category:</strong> 
+                <a href="{% url 'store:category' product.category.slug %}">{{ product.category.name }}</a>
+            </div>
+            {% if product.category.parent %}
+            <div style="margin-bottom: 0.5rem;">
+                <strong>Main Category:</strong> 
+                <a href="{% url 'store:category' product.category.parent.slug %}">{{ product.category.parent.name }}</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Related Products -->
+{% if related_products %}
+<div class="related-products" style="margin-top: 3rem;">
+    <h2 style="margin-bottom: 1.5rem;">Related Products</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem;">
+        {% for related in related_products %}
+        <div class="card">
+            {% if related.image %}
+            <img src="{{ related.image.url }}" alt="{{ related.name }}" class="card-img-top"
+                style="height: 200px; object-fit: contain; padding: 1rem;">
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ related.name }}</h5>
+                <p class="card-text">${{ related.price }}</p>
+                <a href="{{ related.get_absolute_url }}" class="btn btn-primary">View Details</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+</div>
+
+<!-- Image Modal -->
+<div id="imageModal" class="modal" style="display: none; position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9);">
+    <span class="close" onclick="closeImageModal()" style="position: absolute; right: 25px; top: 15px; color: #f1f1f1; font-size: 40px; font-weight: bold; cursor: pointer;">&times;</span>
+    <img id="modalImage" style="margin: auto; display: block; max-width: 90%; max-height: 90%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+</div>
+
+<style>
+.product-detail {
+    display: grid;
+    grid-template-columns: 45% 55%;
+    gap: 2rem;
+    align-items: start;
+}
+
+.product-images {
+    position: sticky;
+    top: 20px;
+}
+
+.main-image img {
+    width: 100%;
+    height: 500px;
+    object-fit: contain;
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    transition: transform 0.3s;
+    cursor: zoom-in;
+}
+
+.product-info {
+    padding: 1rem;
+}
+
+.price-section {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    background-color: #fff;
+}
+
+.related-products .card {
+    transition: transform 0.2s;
+    border: 1px solid #eee;
+}
+
+.related-products .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.related-products .card-img-top {
+    height: 200px;
+    object-fit: contain;
+    padding: 1rem;
+}
+
+@media (max-width: 768px) {
+    .product-detail {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+function openImageModal(src) {
+    const modal = document.getElementById("imageModal");
+    const modalImg = document.getElementById("modalImage");
+    modal.style.display = "block";
+    modalImg.src = src;
+}
+
+function closeImageModal() {
+    document.getElementById("imageModal").style.display = "none";
+}
+
+// Close modal when clicking outside the image
+document.getElementById("imageModal").addEventListener("click", function(e) {
+    if (e.target === this) {
+        closeImageModal();
+    }
+});
+</script>
+{% endblock %}
