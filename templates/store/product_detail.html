@@ -50,10 +50,10 @@
 
         {% if product.stock > 0 %}
         <div style="margin-bottom: 2rem;">
-            <div style="display: flex; gap: 1rem; align-items: center;">
+                <div style="display: flex; gap: 1rem; align-items: center;">
                 <input type="number" id="quantity" value="1" min="1" max="{{ product.stock }}" 
                     style="width: 80px; padding: 0.5rem; border: 1px solid #e2e8f0; border-radius: 4px;">
-                <button onclick="addToCart({{ product.id }}, document.getElementById('quantity').value)" class="btn btn-primary">
+                <button onclick="handleAddToCart({{ product.id }}, this, document.getElementById('quantity').value)" class="btn btn-primary" id="addToCartBtn">
                     <i class="fas fa-cart-plus"></i> Add to Cart
                 </button>
             </div>

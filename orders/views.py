@@ -90,7 +90,12 @@ def order_success(request, order_id):
 
 @login_required
 def order_history(request):
+    # Get all orders for the user and ensure order_id is populated
     orders = Order.objects.filter(user=request.user).order_by('-created_at')
+    for order in orders:
+        if not order.order_id:
+            order.save()  # This will trigger the save method to generate order_id
+    
     context = {'orders': orders}
     return render(request, 'orders/order_history.html', context)
 

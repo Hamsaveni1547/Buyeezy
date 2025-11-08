@@ -13,23 +13,23 @@
 
     <h2 class="mb-4">{{ category.name }}</h2>
 
-    {% if subcategories %}
-    <div class="mb-4">
-        {% for subcategory in subcategories %}
-        <div class="mb-3">
-            <h5 class="mb-2">{{ subcategory.name }}</h5>
-            <a href="{% url 'store:category' subcategory.slug %}" class="btn btn-primary">View Products</a>
-        </div>
+    {% if category.children.all %}
+    <div class="category-subcats-vertical" style="margin-bottom: 2rem; display: flex; flex-direction: column; gap: 1.1rem; align-items: flex-start;">
+        {% for sub in category.children.all %}
+            <a href="{% url 'store:category' sub.slug %}"
+               style="display:block;width:220px;background:#6b7bff;color:#fff;padding:0.9rem 0;border-radius:10px;text-decoration:none;font-weight:700;font-size:1.2rem;border:none;box-shadow:0 6px 14px rgba(99,102,241,0.14);text-align:center;transition:background 0.18s;"
+               onmouseover="this.style.background='#5563e6'" onmouseout="this.style.background='#6b7bff'"
+            >{{ sub.name }}</a>
         {% endfor %}
     </div>
     {% endif %}
 
-    <div class="row g-4">
+    <div class="category-products">
         {% for product in page_obj %}
-        <div class="col-md-4">
-            <div class="card border-0" style="width: 300px; text-align: center;">
+        <div class="product-item mb-4">
+            <div class="card border-0" style="width: 340px; text-align: center;">
                 {% if product.image %}
-                <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" style="object-fit: cover; height: 300px;">
+                <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" style="object-fit: cover; height: 320px;">
                 {% endif %}
                 <div class="card-body px-0">
                     <h5 class="card-title">{{ product.name }}</h5>
@@ -39,7 +39,7 @@
             </div>
         </div>
         {% empty %}
-        <div class="col-12">
+        <div>
             <p>No products found in this category.</p>
         </div>
         {% endfor %}

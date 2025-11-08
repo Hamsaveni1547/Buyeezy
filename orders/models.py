@@ -18,6 +18,7 @@ class Order(models.Model):
         ('cod', 'Cash on Delivery'),
     )
     
+    order_id = models.CharField(max_length=20, unique=True, default='', editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
@@ -33,8 +34,18 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def save(self, *args, **kwargs):
+        if not self.order_id:
+            last_order = Order.objects.all().order_by('-id').first()
+            if last_order:
+                last_id = int(last_order.order_id[3:])
+                self.order_id = f'ORD{str(last_id + 1).zfill(6)}'
+            else:
+                self.order_id = 'ORD000001'
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"Order #{self.id} by {self.user.username}"
+        return f"Order #{self.order_id} by {self.user.username}"
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)

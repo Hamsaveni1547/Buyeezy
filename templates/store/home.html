@@ -15,13 +15,16 @@
 {% if categories %}
 <section style="margin-bottom: 3rem;">
     <h2 style="text-align: center; margin-bottom: 2rem; color: #333;">Shop by Category</h2>
-    <div class="product-grid">
+    <div class="product-grid categories-grid">
         {% for category in categories %}
-        <div class="card">
-            <div class="card-body" style="text-align: center;">
-                <h3 style="color: #667eea; margin-bottom: 1rem;">{{ category.name }}</h3>
-                <p style="color: #666; margin-bottom: 1.5rem;">{{ category.description|truncatewords:10 }}</p>
-                <a href="{% url 'store:category' category.slug %}" class="btn btn-outline">Browse {{ category.name }}</a>
+        <div class="card category-card">
+            <div class="card-body">
+                <h3 style="color: #667eea; margin-bottom: 0.5rem; text-align: center;">{{ category.name }}</h3>
+                <p style="color: #666; margin-bottom: 1rem; text-align: center;">{{ category.description|truncatewords:10 }}</p>
+
+                <div style="text-align: center; margin-top: 1rem;">
+                    <a href="{% url 'store:category' category.slug %}" class="btn btn-outline">Browse {{ category.name }}</a>
+                </div>
             </div>
         </div>
         {% endfor %}
@@ -33,27 +36,29 @@
 {% if featured_products %}
 <section>
     <h2 style="text-align: center; margin-bottom: 2rem; color: #333;">Featured Products</h2>
-    <div class="product-grid">
-        {% for product in featured_products %}
-        <div class="product-card">
-            {% if product.image %}
-                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
-            {% else %}
-                <div class="product-image" style="background-color: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999;">
-                    <i class="fas fa-image" style="font-size: 3rem;"></i>
+    <div class="product-grid one-by-one">
+            {% for product in featured_products %}
+            <div class="product-card product-card-large">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+                {% else %}
+                    <div class="product-image" style="background-color: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999;">
+                        <i class="fas fa-image" style="font-size: 3rem;"></i>
+                    </div>
+                {% endif %}
+
+                <div class="product-info product-info-large">
+                    <a href="{% url 'store:product_detail' product.slug %}" class="product-title">{{ product.name }}</a>
+                    <div class="product-price">₹{{ product.price }}</div>
+
+                    <div style="margin-top: 1rem; text-align: center;">
+                        <a href="{% url 'store:product_detail' product.slug %}" class="btn btn-primary btn-view">
+                            View Details
+                        </a>
+                    </div>
                 </div>
-            {% endif %}
-            <div class="product-info">
-                <div class="product-category">{{ product.category.name }}</div>
-                <a href="{% url 'store:product_detail' product.slug %}" class="product-title">{{ product.name }}</a>
-                <div class="product-price">${{ product.price }}</div>
-                {% csrf_token %}
-                <button onclick="addToCart({{ product.id }})" class="btn btn-primary" style="width: 100%;">
-                    <i class="fas fa-cart-plus"></i> Add to Cart
-                </button>
             </div>
-        </div>
-        {% endfor %}
+            {% endfor %}
     </div>
 </section>
 {% endif %}

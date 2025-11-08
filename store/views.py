@@ -90,6 +90,21 @@ def category_detail(request, slug):
     
     # Get direct subcategories of this category
     subcategories = Category.objects.filter(parent=category)
+
+    # Classify subcategories into women/men/other for easier template rendering
+    women_keywords = ['women', 'woman', "women's", 'female', 'ladies', 'girls']
+    men_keywords = ['men', 'man', "men's", 'male', 'gents', 'boys']
+    women_children = []
+    men_children = []
+    other_children = []
+    for sub in subcategories:
+        name_lower = sub.name.lower()
+        if any(k in name_lower for k in women_keywords):
+            women_children.append(sub)
+        elif any(k in name_lower for k in men_keywords):
+            men_children.append(sub)
+        else:
+            other_children.append(sub)
     
     # Get all descendant categories (including current category)
     def get_descendant_categories(cat):
@@ -134,6 +149,9 @@ def category_detail(request, slug):
     context = {
         'category': category,
         'subcategories': subcategories,
+        'women_children': women_children,
+        'men_children': men_children,
+        'other_children': other_children,
         'page_obj': page_obj,
         'current_sort': sort,
     }
