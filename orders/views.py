@@ -103,4 +103,6 @@ def order_history(request):
 def order_detail(request, order_id):
     order = get_object_or_404(Order, order_id=order_id, user=request.user)
     context = {'order': order}
-    return render(request, 'orders/order_detail.html', context)
+    # templates directory contains `orders/order_details.html` (plural).
+    # Render the existing template to avoid TemplateDoesNotExist errors.
+    return render(request, 'orders/order_details.html', context)

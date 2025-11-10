@@ -1,5 +1,6 @@
 <!-- templates/base.html -->
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -445,6 +446,70 @@
         .breadcrumb-item a:hover {
             text-decoration: underline;
         }
+
+        /* Pagination: make number lists render as modern pill buttons */
+        .pagination {
+            list-style: none !important;
+            padding: 0 !important;
+            margin: 2rem 0 !important;
+            display: flex !important;
+            gap: 0.35rem !important;
+            justify-content: center !important;
+            align-items: center !important;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .pagination .page-item {
+            display: inline-block;
+            margin: 0 0.125rem;
+        }
+
+        .pagination .page-link,
+        .pagination .page-item span.page-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 0.9rem;
+            border-radius: 999px;
+            border: 1px solid #e6e9ef;
+            background: #fff;
+            color: #4f46e5;
+            text-decoration: none;
+            min-width: 36px;
+            height: 36px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            box-shadow: 0 1px 2px rgba(15,23,42,0.04);
+            transition: all 0.18s ease;
+        }
+
+        .pagination .page-link:hover {
+            background: #f3f4ff;
+            border-color: #4f46e5;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(79,70,229,0.08);
+            color: #3730a3;
+        }
+
+        .pagination .page-item.active .page-link,
+        .pagination .page-link.active,
+        .pagination .page-item.active span.page-link {
+            background: #4f46e5;
+            color: #fff;
+            border-color: #4f46e5;
+            font-weight: 600;
+            box-shadow: 0 6px 18px rgba(79,70,229,0.18);
+        }
+
+        .pagination .page-item.disabled .page-link,
+        .pagination .page-link[aria-disabled="true"] {
+            opacity: 0.45;
+            pointer-events: none;
+            background: #f8fafc;
+            color: #94a3b8;
+            border-color: #e6e9ef;
+            box-shadow: none;
+        }
     </style>
 </head>
 <body>
@@ -623,5 +688,7 @@
             }
         }
     </script>
+    <!-- Load site JS (handles add-to-cart, etc.) -->
+    <script src="{% static 'js/main.js' %}"></script>
 </body>
 </html>
