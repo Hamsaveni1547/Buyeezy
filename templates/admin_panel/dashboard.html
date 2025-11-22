@@ -1,0 +1,184 @@
+<!-- templates/admin_panel/dashboard.html -->
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Statistics Cards -->
+<div class="stat-cards">
+    <div class="stat-card">
+        <div class="stat-card-info">
+            <h3>{{ total_products }}</h3>
+            <p>Total Products</p>
+        </div>
+        <div class="stat-card-icon blue">
+            <i class="fas fa-box"></i>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-info">
+            <h3>{{ total_orders }}</h3>
+            <p>Total Orders</p>
+        </div>
+        <div class="stat-card-icon green">
+            <i class="fas fa-shopping-cart"></i>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-info">
+            <h3>{{ total_users }}</h3>
+            <p>Total Users</p>
+        </div>
+        <div class="stat-card-icon orange">
+            <i class="fas fa-users"></i>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-info">
+            <h3>{{ pending_orders }}</h3>
+            <p>Pending Orders</p>
+        </div>
+        <div class="stat-card-icon purple">
+            <i class="fas fa-clock"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Revenue Cards -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+    <div class="stat-card">
+        <div class="stat-card-info">
+            <h3>${{ total_revenue|floatformat:2 }}</h3>
+            <p>Total Revenue</p>
+        </div>
+        <div class="stat-card-icon green">
+            <i class="fas fa-dollar-sign"></i>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-card-info">
+            <h3>${{ today_revenue|floatformat:2 }}</h3>
+            <p>Today's Revenue</p>
+        </div>
+        <div class="stat-card-icon blue">
+            <i class="fas fa-calendar-day"></i>
+        </div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+    <!-- Recent Orders -->
+    <div class="admin-table-container">
+        <div class="admin-table-header">
+            <h2>Recent Orders</h2>
+            <a href="{% url 'admin_panel:orders' %}" class="btn btn-primary btn-sm">View All</a>
+        </div>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Customer</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in recent_orders %}
+                <tr>
+                    <td><a href="{% url 'admin_panel:order_detail' order.order_id %}" style="color: #667eea; text-decoration: none;">{{ order.order_id }}</a></td>
+                    <td>{{ order.user.username }}</td>
+                    <td>${{ order.total_amount }}</td>
+                    <td>
+                        {% if order.status == 'pending' %}
+                            <span class="badge badge-warning">Pending</span>
+                        {% elif order.status == 'confirmed' %}
+                            <span class="badge badge-info">Confirmed</span>
+                        {% elif order.status == 'shipped' %}
+                            <span class="badge badge-primary">Shipped</span>
+                        {% elif order.status == 'delivered' %}
+                            <span class="badge badge-success">Delivered</span>
+                        {% else %}
+                            <span class="badge badge-danger">Cancelled</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="text-align: center; color: #999;">No orders yet</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Low Stock Products -->
+    <div class="admin-table-container">
+        <div class="admin-table-header">
+            <h2>Low Stock Alert</h2>
+            <a href="{% url 'admin_panel:products' %}" class="btn btn-warning btn-sm">Manage Stock</a>
+        </div>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Stock</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in low_stock_products %}
+                <tr>
+                    <td><a href="{% url 'admin_panel:product_edit' product.id %}" style="color: #667eea; text-decoration: none;">{{ product.name }}</a></td>
+                    <td>{{ product.category.name }}</td>
+                    <td>
+                        <span class="badge badge-danger">{{ product.stock }} left</span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" style="text-align: center; color: #999;">All products have sufficient stock</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Top Selling Products -->
+<div class="admin-table-container" style="margin-top: 1.5rem;">
+    <div class="admin-table-header">
+        <h2>Top Selling Products</h2>
+    </div>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Total Sold</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in top_products %}
+            <tr>
+                <td><a href="{% url 'admin_panel:product_edit' product.id %}" style="color: #667eea; text-decoration: none;">{{ product.name }}</a></td>
+                <td>{{ product.category.name }}</td>
+                <td>${{ product.price }}</td>
+                <td>{{ product.stock }}</td>
+                <td><span class="badge badge-success">{{ product.total_sold }} units</span></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" style="text-align: center; color: #999;">No sales data available</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

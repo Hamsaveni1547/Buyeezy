@@ -1,0 +1,85 @@
+<!-- templates/admin_panel/product_form.html -->
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}{% if edit_mode %}Edit{% else %}Add{% endif %} Product{% endblock %}
+{% block page_title %}{% if edit_mode %}Edit{% else %}Add New{% endif %} Product{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px;">
+    <div class="admin-table-container">
+        <div class="admin-table-header">
+            <h2>{% if edit_mode %}Edit Product{% else %}Add New Product{% endif %}</h2>
+        </div>
+        <div style="padding: 2rem;">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label class="form-label">Product Name *</label>
+                    <input type="text" name="name" class="form-control" value="{% if product %}{{ product.name }}{% endif %}" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Category *</label>
+                    <select name="category" class="form-control" required>
+                        <option value="">Select Category</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}" {% if product and product.category.id == category.id %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description *</label>
+                    <textarea name="description" class="form-control" required>{% if product %}{{ product.description }}{% endif %}</textarea>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Price ($) *</label>
+                        <input type="number" name="price" step="0.01" min="0" class="form-control" value="{% if product %}{{ product.price }}{% endif %}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Stock *</label>
+                        <input type="number" name="stock" min="0" class="form-control" value="{% if product %}{{ product.stock }}{% endif %}" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Product Image</label>
+                    <input type="file" name="image" class="form-control" accept="image/*">
+                    {% if product and product.image %}
+                        <div style="margin-top: 1rem;">
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}" style="max-width: 200px; border-radius: 5px;">
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div style="display: flex; gap: 2rem; margin-bottom: 1.5rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="featured" {% if product and product.featured %}checked{% endif %}>
+                        <span>Featured Product</span>
+                    </label>
+
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="available" {% if not product or product.available %}checked{% endif %}>
+                        <span>Available for Sale</span>
+                    </label>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> {% if edit_mode %}Update{% else %}Add{% endif %} Product
+                    </button>
+                    <a href="{% url 'admin_panel:products' %}" class="btn btn-danger">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

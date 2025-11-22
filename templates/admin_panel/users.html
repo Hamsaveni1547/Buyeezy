@@ -1,0 +1,40 @@
+<!-- templates/admin_panel/users.html -->
+{% extends 'admin_panel/base.html' %}
+{% block title %}Users Management{% endblock %}
+{% block page_title %}Users Management{% endblock %}
+{% block content %}
+<div class="search-bar" style="margin-bottom: 1.5rem;">
+    <form method="GET" style="display: flex; gap: 0.5rem;">
+        <input type="text" name="q" placeholder="Search users..." value="{{ query }}" class="form-control">
+        <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+    </form>
+</div>
+<div class="admin-table-container">
+    <div class="admin-table-header"><h2>Users ({{ page_obj.paginator.count }})</h2></div>
+    <table class="admin-table">
+        <thead><tr><th>Username</th><th>Name</th><th>Email</th><th>Orders</th><th>Total Spent</th><th>Joined</th><th>Status</th></tr></thead>
+        <tbody>
+            {% for user in page_obj %}
+            <tr>
+                <td>{{ user.username }}</td>
+                <td>{{ user.first_name }} {{ user.last_name }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.order_count|default:0 }}</td>
+                <td>${{ user.total_spent|default:0|floatformat:2 }}</td>
+                <td>{{ user.date_joined|date:"M d, Y" }}</td>
+                <td>{% if user.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-danger">Inactive</span>{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" style="text-align: center; padding: 3rem; color: #999;">No users found</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if page_obj.has_other_pages %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}<a href="?page=1{% if query %}&q={{ query }}{% endif %}">First</a><a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">Previous</a>{% endif %}
+        <span class="active">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}">Next</a><a href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}">Last</a>{% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+<!-- templates/admin_panel/categories.html -->
+{% extends 'admin_panel/base.html' %}
+{% block title %}Categories Management{% endblock %}
+{% block page_title %}Categories Management{% endblock %}
+{% block content %}
+<div style="display: flex; justify-content: flex-end; margin-bottom: 1.5rem;">
+    <a href="{% url 'admin_panel:category_add' %}" class="btn btn-success"><i class="fas fa-plus"></i> Add New Category</a>
+</div>
+<div class="admin-table-container">
+    <div class="admin-table-header"><h2>Categories</h2></div>
+    <table class="admin-table">
+        <thead><tr><th>Name</th><th>Description</th><th>Products</th><th>Actions</th></tr></thead>
+        <tbody>
+            {% for category in categories %}
+            <tr>
+                <td><strong>{{ category.name }}</strong></td>
+                <td>{{ category.description }}</td>
+                <td><span class="badge badge-info">{{ category.product_count }} products</span></td>
+                <td>
+                    <a href="{% url 'admin_panel:category_edit' category.id %}" class="btn btn-primary btn-sm"><i class="fas fa-edit"></i></a>
+                    <a href="{% url 'admin_panel:category_delete' category.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Delete this category? All products will remain but be uncategorized.')"><i class="fas fa-trash"></i></a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" style="text-align: center; padding: 3rem; color: #999;">No categories yet</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

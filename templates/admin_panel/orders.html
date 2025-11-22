@@ -1,0 +1,56 @@
+<!-- templates/admin_panel/orders.html -->
+{% extends 'admin_panel/base.html' %}
+{% block title %}Orders Management{% endblock %}
+{% block page_title %}Orders Management{% endblock %}
+{% block content %}
+<div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+    <form method="GET" style="display: flex; gap: 0.5rem; flex: 1;">
+        <input type="text" name="q" placeholder="Search by Order ID, username, email..." value="{{ query }}" class="form-control">
+        <select name="status" class="form-control" style="max-width: 200px;">
+            <option value="">All Status</option>
+            <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+            <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>Confirmed</option>
+            <option value="shipped" {% if status_filter == 'shipped' %}selected{% endif %}>Shipped</option>
+            <option value="delivered" {% if status_filter == 'delivered' %}selected{% endif %}>Delivered</option>
+            <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelled</option>
+        </select>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+    </form>
+</div>
+<div class="admin-table-container">
+    <div class="admin-table-header"><h2>Orders ({{ page_obj.paginator.count }})</h2></div>
+    <table class="admin-table">
+        <thead><tr><th>Order ID</th><th>Customer</th><th>Date</th><th>Amount</th><th>Payment</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+            {% for order in page_obj %}
+            <tr>
+                <td><a href="{% url 'admin_panel:order_detail' order.order_id %}" style="color: #667eea;">{{ order.order_id }}</a></td>
+                <td>{{ order.user.username }}</td>
+                <td>{{ order.created_at|date:"M d, Y" }}</td>
+                <td>${{ order.total_amount }}</td>
+                <td>{{ order.get_payment_method_display }}</td>
+                <td>
+                    {% if order.status == 'pending' %}<span class="badge badge-warning">Pending</span>
+                    {% elif order.status == 'confirmed' %}<span class="badge badge-info">Confirmed</span>
+                    {% elif order.status == 'shipped' %}<span class="badge badge-primary">Shipped</span>
+                    {% elif order.status == 'delivered' %}<span class="badge badge-success">Delivered</span>
+                    {% else %}<span class="badge badge-danger">Cancelled</span>{% endif %}
+                </td>
+                <td><a href="{% url 'admin_panel:order_detail' order.order_id %}" class="btn btn-primary btn-sm"><i class="fas fa-eye"></i></a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" style="text-align: center; padding: 3rem; color: #999;">No orders found</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if page_obj.has_other_pages %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}<a href="?page=1{% if query %}&q={{ query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">First</a>
+        <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Previous</a>{% endif %}
+        <span class="active">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Next</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">Last</a>{% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

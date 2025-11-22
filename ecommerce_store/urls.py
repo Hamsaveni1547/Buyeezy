@@ -6,6 +6,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('admin-panel/', include('store.admin_urls')),  # ⭐ ADD THIS LINE
     path('', include('store.urls')),  # Root URL points to store app
     path('cart/', include('cart.urls', namespace='cart')),
     path('accounts/', include('accounts.urls')),
